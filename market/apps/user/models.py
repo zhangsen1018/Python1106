@@ -31,3 +31,8 @@ class Users(Base_model):
 
     def __str__(self):
         return self.username
+
+    class Meta:
+        db_table = "sp_user"
+        verbose_name = "用户管理"
+        verbose_name_plural = verbose_name
