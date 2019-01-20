@@ -28,7 +28,7 @@ SECRET_KEY = '^z5)9#))34%s18_pzap)$-#ei^b$(b&wm6m&=h+9b=qwa@vr!l'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 添加子应用
-    'apps.user.apps.UserConfig',
+    'user.apps.UserConfig',
 ]
 
 MIDDLEWARE = [
@@ -112,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh_hans'
 
 TIME_ZONE = 'UTC'
 
@@ -120,7 +120,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

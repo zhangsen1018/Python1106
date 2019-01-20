@@ -1,9 +1,15 @@
+
 import hashlib
 
+from market.settings import SECRET_KEY
 
-# 创建一个哈希加密方法
+
 def set_password(password):
-    # 加密方法
-    h = hashlib.md5(password.encode('utf-8'))
-    # 返回 加密后的字符串
-    return h.hexdigest()
+    # 循环加密 + 加盐
+    for _ in range(1000):
+        pass_str = "{}{}".format(password,SECRET_KEY)
+        h = hashlib.md5(pass_str.encode('utf-8'))
+        password = h.hexdigest()
+
+    # 返回密码
+    return password

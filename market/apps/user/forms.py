@@ -1,12 +1,23 @@
 from datetime import date
 
 from django import forms
+from django.core.validators import RegexValidator
 
 from user.models import Users
 from market import set_password
 
+
 # 注册ModelForm的模型类
 class RegisterModelForm(forms.ModelForm):
+    # 用户手机号
+    username = forms.CharField(
+        error_messages={
+            "required": "手机必填",
+        },
+        validators=[
+            RegexValidator(r'^1[3-9]\d{9}$', "手机号码格式错误!")
+        ]
+    )
     # 单独定义一个字段
     # 密码
     password = forms.CharField(max_length=16,
@@ -38,13 +49,13 @@ class RegisterModelForm(forms.ModelForm):
             }
         }
 
-    # 验证在数据库中 用户名是否存在
-    def clean_username(self):  # 验证用户名是否存在
+    # 验证在数据库中 验证手机号是否存在
+    def clean_username(self):  # 验证手机号是否已经被注册
         username = self.cleaned_data.get('username')
         flag = Users.objects.filter(username=username).exists()
         if flag:
             # 在数据库中存在 提示错误
-            raise forms.ValidationError("该用户名已经存在,请重新填写")
+            raise forms.ValidationError("该手机号已经被注册,请重新填写")
         else:
             # 返回单个字段 ,不用返回全部
             return username
@@ -64,6 +75,15 @@ class RegisterModelForm(forms.ModelForm):
 
 # 登录ModelForm的模型类
 class LoginModelForm(forms.ModelForm):
+    # 用户手机号
+    username = forms.CharField(
+        error_messages={
+            "required": "手机号必填",
+        },
+        validators=[
+            RegexValidator(r'^1[3-9]\d{9}$', "手机号码格式错误!")
+        ]
+    )
     # 单独定义一个字段,密码
     password = forms.CharField(max_length=16,
                                min_length=8,
@@ -76,26 +96,27 @@ class LoginModelForm(forms.ModelForm):
     # 模型用的 Users
     class Meta:
         model = Users
+        # 验证手机号
         fields = ['username']
         # 提示错误信息
         error_messages = {
             "username": {
-                'required': '用户名必须填写',
-                'max_length': '用户名长度不能大于11',
+                'required': '手机号必须填写',
+                'max_length': '手机号长度不能大于11',
             }
         }
 
     def clean(self):
-        # 验证用户名
-        # 从清洗的数据中的得到用户名
+        # # 验证手机号
+        # 从清洗的数据中的得到手机号
         username = self.cleaned_data.get('username')
 
         try:
-            # 如果 清洗的数据中有用户名和数据库的一致
+            # 如果 清洗的数据中有手机号和数据库的一致
             user = Users.objects.get(username=username)
         except Users.DoesNotExist:
             # 不一致,提示错误
-            raise forms.ValidationError({'username': '用户名错误'})
+            raise forms.ValidationError({'username': '手机号错误'})
 
         # 验证密码
         # 空字符串是因为创建的加密方法需要必须传值

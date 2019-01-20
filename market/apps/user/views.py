@@ -3,13 +3,17 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.views import View
+
 # Create your views here.
 
 # 在应用里创建一个加密方法
+from django.utils.decorators import method_decorator
+from django.views import View
+
+from DB.base_view import BaseVerifyView
 from market import set_password
 from user.forms import RegisterModelForm, LoginModelForm
-from user.helps import check_login
+from user.helps import check_login, check_login_view
 from user.models import Users
 
 
@@ -32,7 +36,7 @@ class RegisterView(View):  # 注册 直接定义get 和 post
             # 操作数据库
             cleaned_data = form.cleaned_data
             # 创建一个注册用户
-            # 清洗过的数据用get得到
+            # 得到清洗过的数据
             user = Users()
             user.username = cleaned_data.get('username')
             user.password = set_password(cleaned_data.get('password'))
@@ -43,12 +47,13 @@ class RegisterView(View):  # 注册 直接定义get 和 post
             return render(request, self.template_name, context={'form': form})
 
 
-@check_login
 # 定义一个登录视图类
 class LoginView(View):  # 登录 直接定义get 和 post
+    # @check_login_view
     def get(self, request):
         return render(request, 'user/login.html')
 
+    # @check_login_view
     def post(self, request):
         # 接收参数
         data = request.POST
@@ -63,12 +68,21 @@ class LoginView(View):  # 登录 直接定义get 和 post
             request.session['username'] = user.username
             # 操作数据库
             # 返回到首页
-            return redirect('用户:首页')
+            return redirect('用户:个人中心')
         else:
             # 合成响应
             # 进入到登录页面
             return render(request, 'user/login.html', {'form': form})
 
+    # @method_decorator(check_login)
+    # def dispatch(self, request, *args, **kwargs):
+    #     return super().dispatch(request, *args, **kwargs)
 
-def index(request):
+
+def index(request):  # 首页
     return render(request, 'user/index.html')
+
+
+@check_login
+def PersonalCenter(request):  # 个人中心
+    return render(request, 'user/infor.html')

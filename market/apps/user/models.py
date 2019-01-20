@@ -7,7 +7,7 @@ from DB.base_model import Base_model
 class Users(Base_model):
     username = models.CharField(max_length=11,
                                 validators=[
-                                    MinLengthValidator(11, '用户名至少11位')
+                                    MinLengthValidator(11, '手机号至少11位')
                                 ],
                                 verbose_name='用户名,使用手机号')
     password = models.CharField(max_length=255, verbose_name='密码')

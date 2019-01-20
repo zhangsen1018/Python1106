@@ -1,17 +1,9 @@
 {% extends 'basetem/basetem_user.html' %}
 {% load static %}
+{% block title %}
+    登录
+{% endblock %}
 {% block content %}
-    <body>
-    <header data-am-widget="header" class="am-header am-header-default sq-head ">
-        <div class="am-header-left am-header-nav">
-            <a href="javascript:history.back()" class="">
-                <i class="am-icon-chevron-left"></i>
-            </a>
-        </div>
-        <h1 class="am-header-title">
-            <a href="" class="">登录</a>
-        </h1>
-    </header>
     <form action="" method="post" class="form-horizontal">
         {% csrf_token %}
         <div style="height: 49px;"></div>
@@ -34,6 +26,5 @@
         <li><a href=""><img src="{% static 'images/qqlogin.png' %}"/></a></li>
         <li><a href=""><img src="{% static 'images/sinalog.png' %}"/></a></li>
     </ul>
-    </body>
 
 {% endblock %}
