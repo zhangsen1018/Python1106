@@ -64,13 +64,23 @@ class RegisterModelForm(forms.ModelForm):
     def clean(self):
         # 判断两次密码是否一致
         # 在清洗的数据中的到表单提交的数据,密码和确认密码
-        pwd = self.cleaned_data.get('password')  # ''
-        repwd = self.cleaned_data.get('repassword')  # ''
-        if pwd and repwd and pwd != repwd:
+        # 获取用户名和密码
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        # 验证
+        # 根据手机号获取
+        try:
+            user = Users.objects.get(username=username)
+
+        except:
+            raise forms.ValidationError({'username': '手机号错误'})
+
+        if user.password != set_password(password):
             # 在密码和确认密码,并且确认密码和密码不一样的时候,提示错误信息
             raise forms.ValidationError({'repassword': "两次密码不一致"})
-        else:
-            return self.cleaned_data
+            # 将用户信息保存到cleaned_data中
+        self.cleaned_data['user'] = user
+        return self.cleaned_data
 
 
 # 登录ModelForm的模型类
@@ -97,13 +107,16 @@ class LoginModelForm(forms.ModelForm):
     class Meta:
         model = Users
         # 验证手机号
-        fields = ['username']
+        fields = ['username', 'password']
         # 提示错误信息
         error_messages = {
             "username": {
                 'required': '手机号必须填写',
                 'max_length': '手机号长度不能大于11',
-            }
+            },
+            'password': {
+                'required': '请填写密码',
+            },
         }
 
     def clean(self):
@@ -128,3 +141,60 @@ class LoginModelForm(forms.ModelForm):
         # 返回所有清洗后的数据
         self.cleaned_data['user'] = user
         return self.cleaned_data
+
+
+# 定义个人资料ModelForm的模型
+class MemberModelForm(forms.ModelForm):
+    # 用户昵称
+    my_name = forms.CharField(max_length=50,
+                              min_length=2,
+                              error_messages={
+                                  'min_length': '用户昵称最小长度必须为2位',
+                                  'max_length': '用户昵称最大长度不能超过50位',
+                              })
+    my_birthday = forms.DateField()
+    school = forms.CharField(max_length=50,
+                             error_messages={
+                                 'max_length': '学校最大长度不能超过50位'
+                             })
+    my_home = forms.CharField(max_length=50,
+                              error_messages={
+                                  'max_length': '用户详细地址位置最大长度不能超过50位'
+                              })
+    address = forms.CharField(max_length=50,
+                              error_messages={
+                                  'max_length': '用户的故乡最大长度不能超过50位'
+                              })
+    tel = forms.CharField(error_messages={
+        "required": "手机号必填",
+    },
+        validators=[
+            RegexValidator(r'^1[3-9]\d{9}$', "手机号码格式错误!")
+        ]
+    )
+
+    # 模型用的 Users
+    class Meta:
+        model = Users
+        fields = ['my_name', 'school', 'my_home', 'address', 'tel']
+        # 提示错误信息
+        error_messages = {
+            "my_name": {
+                'required': '用户昵称必须填写',
+                'max_length': '用户昵称长度不能大于50',
+                'min_length': '用户昵称最小长度必须为2位',
+            },
+            'school': {
+                'max_length': '学校最大长度不能超过50位'
+            },
+            'my_home': {
+                'max_length': '用户详细地址位置最大长度不能超过50位'
+            },
+            'address': {
+                'max_length': '用户的故乡最大长度不能超过50位'
+            },
+            'tel': {
+                'required': '手机号必须填写',
+                'max_length': '手机号长度不能大于11',
+            }
+        }
