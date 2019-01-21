@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 添加子应用
     'user.apps.UserConfig',
+    'foods.apps.FoodsConfig',
+    'orderform.apps.OrderformConfig',
+    'shopcar.apps.ShopcarConfig',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +139,19 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/static/media/"
 # 配置该URL对应的物理目录路径 储存地址
 MEDIA_ROOT = os.path.join(BASE_DIR, "static/media")
+
+# 添加django中的缓存配置
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",  # redis启动起来, 使用的1号数据库 (0-15)
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# 用之前要启动redis数据库
+# 修改默认sessioin的存储引擎
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"

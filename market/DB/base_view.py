@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from user.helps import check_login_view, check_login
+from user.helps import check_login
 
 
 class BaseVerifyView(View):
