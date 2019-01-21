@@ -107,7 +107,14 @@ class MemberView(BaseVerifyView):  # 个人中心视图类
 
 class PersonalCenterView(BaseVerifyView):  # 个人资料视图类
     def get(self, request):
-        return render(request, 'user/infor.html')
+        # 读取数据,渲染页面
+        # username=request.session.get('username')
+        username = 17629287226
+        user = Users.objects.get(username=username)
+        context = {
+            'user': user
+        }
+        return render(request, 'user/infor.html', context=context)
 
     # @method_decorator(check_login)
     def post(self, request):
@@ -118,21 +125,30 @@ class PersonalCenterView(BaseVerifyView):  # 个人资料视图类
         # 验证表单参数合法性 用表单来验证
         form = RegisterModelForm(data)
         if form.is_valid():
+            #  验证通过,先将头像保存到本地static/media下,在将头像地址返回
+            #  保存头像
+            username = request.POST.get('username')
             # 操作数据库
-            cleaned_data = form.cleaned_data
-            # 创建一个注册用户
-            # 得到清洗过的数据
-            user = Users()
-            user.my_name = cleaned_data.get('my_name')
-            user.school = set_password(cleaned_data.get('school'))
-            user.my_home = set_password(cleaned_data.get('my_home'))
-            user.address = set_password(cleaned_data.get('address'))
-            user.tel = set_password(cleaned_data.get('tel'))
-            user.save()
+            # 头像地址
+            img = f'media/{tel}.png'
+            my_name = form.cleaned_data.get('my_name')
+            sex = request.POST.get('sex')
+            my_birthday = request.POST.get('my_birthday')
+            school = request.POST.get('school')
+            my_home = request.POST.get('my_home')
+            address = request.POST.get('address')
+            # 保存提交个人信息
+            Users.objects.filter(username=username).update(my_name=my_name,
+                                                           img=img,
+                                                           sex=sex,
+                                                           my_birthday=my_birthday,
+                                                           school=school,
+                                                           my_home=my_home,
+                                                           address=address)
             return redirect('用户:个人资料')
         else:
-            # 错误信息提示
-            return render(request, 'user/infor.html', context={'form': form})
+                # 错误信息提示
+            return render(request, 'user/member.html', context={'form': form})
 
 
 class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
@@ -147,19 +163,19 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
         if login_form.is_valid():
             # 验证成功
             # 数据合法
-            # 从session中得到数据
-            # 单独创建方法保存session,更新资料
-            user = login_form.cleaned_data.get('user')
-            # request.session['ID'] = user.pk
-            # request.session['username'] = user.username
-            login(request, user)
+            password = login_form.cleaned_data['password']
+            username= login_form.cleaned_data.get('username')
+            password = set_password(password)
+            # 更新用户密码
+            Users.objects.filter(username=username).update(password=password)
             # 操作数据库
             # 返回到登录
-            return redirect('用户:用户登录')
+            return redirect('用户:登录')
         else:
             # 合成响应
-            # 进入到忘记密码页面
-            return render(request, 'user/forgetpassword.html', {'form': login_form})
+            # 验证不通过,返回注册页面
+            # 进入到注册页面
+            return render(request, 'user/reg.html', {'form': login_form})
 
 
 def user_code(request):
@@ -176,7 +192,7 @@ def user_code(request):
             a.expire(sj, 180)
             __business_id = uuid.uuid1()
             # 信息
-            params = "{\"code\":\"%s\",\"product\":\"特殊服务 \"}" % codesj
+            params = "{\"code\":\"%s\",\"product\":\"电商 \"}" % codesj
             send_sms(__business_id, sj, "注册验证", "SMS_2245271", params)
             return JsonResponse({"ok": 1})
         else:
