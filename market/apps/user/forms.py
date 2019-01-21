@@ -65,21 +65,14 @@ class RegisterModelForm(forms.ModelForm):
         # 判断两次密码是否一致
         # 在清洗的数据中的到表单提交的数据,密码和确认密码
         # 获取用户名和密码
-        username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
-        # 验证
-        # 根据手机号获取
-        try:
-            user = Users.objects.get(username=username)
+        repassword = self.cleaned_data.get('repassword')
 
-        except:
-            raise forms.ValidationError({'username': '手机号错误'})
-
-        if user.password != set_password(password):
+        if password and repassword and password != repassword:
             # 在密码和确认密码,并且确认密码和密码不一样的时候,提示错误信息
-            raise forms.ValidationError({'repassword': "两次密码不一致"})
+            raise forms.ValidationError({'repassword': "两次密码不一致!"})
             # 将用户信息保存到cleaned_data中
-        self.cleaned_data['user'] = user
+            # 返回清洗后的所有数据
         return self.cleaned_data
 
 

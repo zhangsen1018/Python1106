@@ -1,19 +1,18 @@
-from django.shortcuts import render
+import random
+import re
+import uuid
 
-# Create your views here.
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from DB.dxyzm import send_sms
 
-# Create your views here.
-
-# 在应用里创建一个加密方法
-from django.utils.decorators import method_decorator
 from django.views import View
+from django_redis import get_redis_connection
 
 from DB.base_view import BaseVerifyView
 from market import set_password
 from user.forms import RegisterModelForm, LoginModelForm
-from user.helps import login, check_login
+from user.helps import login
 
 from user.models import Users
 
@@ -68,18 +67,27 @@ class LoginView(View):  # 登录 直接定义get 和 post
             user = login_form.cleaned_data.get('user')
             # request.session['ID'] = user.pk
             # request.session['username'] = user.username
-            login(request, user)
-            # 操作数据库
-            # 返回到首页
-            return redirect('用户:个人中心')
+            us = Users.objects.filter(user=user)
+            if us:
+                password = login_form.cleaned_data.get('password')
+                pwd = set_password(password)
+                if Users.objects.filter(pwd=pwd):
+                    # 操作数据库
+                    # 返回到首页
+                    return redirect('用户:个人中心')
+            else:
+                context = {
+                    'context': '用户名或者密码错误'
+                }
+                return render(request, 'user/login.html', context=context)
         else:
             # 合成响应
             # 进入到登录页面
             return render(request, 'user/login.html', {'form': login_form})
 
-    # @method_decorator(check_login)
-    # def dispatch(self, request, *args, **kwargs):
-    #     return super().dispatch(request, *args, **kwargs)
+        # @method_decorator(check_login)
+        # def dispatch(self, request, *args, **kwargs):
+        #     return super().dispatch(request, *args, **kwargs)
 
 
 def index(request):  # 首页
@@ -153,3 +161,25 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
             # 进入到忘记密码页面
             return render(request, 'user/forgetpassword.html', {'form': login_form})
 
+
+def user_code(request):
+    if request.method == 'POST':
+        sj = request.POST.get('username', '')
+        resj = re.compile('^1[3-9]\d{9}$')
+        re_sj = re.search(resj, sj)
+        if re_sj:
+            codesj = "".join([str(random.randint(0, 9)) for _ in range(4)])
+            # print([str(random.randint(0, 9)) for _ in range(4)])
+            # print(codesj)
+            a = get_redis_connection("default")
+            a.set(sj, codesj)
+            a.expire(sj, 180)
+            __business_id = uuid.uuid1()
+            # 信息
+            params = "{\"code\":\"%s\",\"product\":\"特殊服务 \"}" % codesj
+            send_sms(__business_id, sj, "注册验证", "SMS_2245271", params)
+            return JsonResponse({"ok": 1})
+        else:
+            return JsonResponse({'err': 0, "erra": "cw"})
+    else:
+        return JsonResponse({'err': 0, "erra": "请求方式错误"})

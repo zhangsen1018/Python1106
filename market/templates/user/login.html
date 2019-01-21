@@ -13,8 +13,11 @@
         <div style="height: 3rem;"></div>
         <input type="text" name="username" id="mobile" placeholder="请输入用户名/手机号" class="login-name">
         <p class="am-text-danger">{{ form.errors.username.0 }}</p>
+
+        <p class="am-text-danger">{{ context }}</p>
         <input type="password" name="password" id="password" placeholder="请输入密码" class="login-password">
         <p class="am-text-danger">{{ form.errors.password.0 }}</p>
+        <p class="am-text-danger">{{ context }}</p>
         <input type="submit" class="login-btn" value="我要登录">
         <div class="agree">
             <a href="{% url '用户:用户注册' %}">免费注册</a>
