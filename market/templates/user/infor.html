@@ -2,82 +2,83 @@
 {% load static %}
 
 {% block title %}
-    个人中心
+    个人资料
 {% endblock %}
-{% block content %}
-    <form action="" method="post" class="form-horizontal">
-        {% csrf_token %}
+{% block aaa %}
+    个人资料
+{% endblock %}
 
-        <header data-am-widget="header" class="am-header am-header-default sq-head ">
-            <div class="am-header-left am-header-nav">
-                <a href="javascript:history.back()" class="">
-                    <i class="am-icon-chevron-left"></i>
-                </a>
-            </div>
-            <h1 class="am-header-title">
-                <a href="" class="">个人资料</a>
+{% block content %}
+  <header data-am-widget="header" class="am-header am-header-default sq-head ">
+			<div class="am-header-left am-header-nav">
+				<a href="javascript:history.back()" class="">
+					<i class="am-icon-chevron-left"></i>
+				</a>
+			</div>
+			<h1 class="am-header-title">
+  	            <a href="" class="">修改个人资料</a>
             </h1>
-        </header>
-        <div style="height: 49px;"></div>
-        <ul class="safty1">
-            <li>
-                <a href="">
-                    <i style="margin-top: 25px;">头像</i>
+	    </header>
+	    <div style="height: 49px;"></div>
+        <form action="{% url '用户:个人资料' %}" method="post">
+            {% csrf_token %}
+            <ul class="safty1">
+                <li>
+                    <i >头像</i>
+
                     <div class="infor-pic">
-                        <img src="{% static 'media/user_img/infortx.png' %}"/>
+                        <img src="{% static 'media/user_img/infortx.png' %} " />
                     </div>
-                </a>
-            </li>
-            <li>
-                <a href="">
+                    <input style="margin-top: 25px;" type="file" name="imageFile" ID="fupPhoto"/>
+                </li>
+                <li>
                     <i>昵称</i>
-                    <input class="infor-tele" name="my_name" placeholder="默契"/>
+                    <input class="infor-tele" name="my_name"  placeholder="{{request.session.my_name}}"/>
                     <p class="am-text-danger">{{ form.errors.my_name.0 }}</p>
-                </a>
-            </li>
-            <li>
-                <a href="">
+                </li>
+                <li>
                     <i>性别</i>
                     <i class="infor-tele">
                         <label class="am-radio-inline">
-                            <input type="radio" name="radio10" checked="checked" value="1" data-am-ucheck>男
+                          <input type="radio" name="sex"  checked="checked" value="1" data-am-ucheck>男
                         </label>
                         <label class="am-radio-inline">
-                            <input type="radio" name="radio10" value="1" data-am-ucheck>女
+                          <input type="radio" name="sex" value="2" data-am-ucheck>女
                         </label>
-                    </i>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <i>生日</i>
-                    <input class="infor-tele" placeholder="出生日期"/>
-                </a>
-            </li>
-        </ul>
-        <div style="height: 10px; background: #efefef;"></div>
-        <ul class="safty1">
-            <li>
-                <i>学校</i>
-                <input class="infor-tele" placeholder="就读于哪个学校"/>
-            </li>
-            <li>
-                <i>位置</i>
-                <input class="infor-tele" placeholder="详细地址"/>
-            </li>
-            <li>
-                <i>故乡</i>
-                <input class="infor-tele" placeholder="来自哪里"/>
-            </li>
-            <li>
-                <i>手机</i>
-                <input class="infor-tele" placeholder="13012345678"/>
-            </li>
 
-            <input type="submit" class="login-btn" value="立即提交">
-        </ul>
-        <script src="{% static 'js/jquery.min.js' %}"></script>
+                    </i>
+                </li><li>
+                    <i>生日</i>
+                    <input class="infor-tele" name="my_birthday" placeholder="出生日期"/>
+                    <p class="am-text-danger">{{ form.errors.my_birthday.0 }}</p>
+                </li>
+            </ul>
+            <div style="height: 10px; background: #efefef;"></div>
+             <ul class="safty1">
+                <li>
+                        <i>学校</i>
+                        <input class="infor-tele" name="school" placeholder="就读于哪个学校"/>
+                        <p class="am-text-danger">{{ form.errors.school.0 }}</p>
+                </li>
+                <li>
+                        <i>位置</i>
+                        <input class="infor-tele" name="my_home"  placeholder="详细地址"/>
+                        <p class="am-text-danger">{{ form.errors.my_home.0 }}</p>
+                </li>
+                <li>
+                        <i>故乡</i>
+                        <input class="infor-tele" name="address"  placeholder="来自哪里"/>
+                        <p class="am-text-danger">{{ form.errors.address.0 }}</p>
+                </li>
+                <li>
+                        <i>手机</i>
+                    <p><b>{{request.session.tel}}</b></p>
+                </li>
+            </ul>
+            <input type="submit" class="login-btn" value="修改资料">
+        </form>
+	    <script src="{% static 'js/jquery.min.js' %}"></script>
         <script src="{% static 'js/amazeui.min.js' %}"></script>
-    </form>
 
 {% endblock %}
+

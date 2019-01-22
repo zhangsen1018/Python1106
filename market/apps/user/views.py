@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django_redis import get_redis_connection
 
 from DB.base_view import BaseVerifyView
@@ -111,38 +112,35 @@ class PersonalCenterView(BaseVerifyView):
         # 接收参数
         # 渲染提交的数据
         data = request.POST
+        user_id = request.session.get('ID')
+        user = User.objects.filter(id=user_id)
         # 验证表单参数合法性 用表单来验证
-        form = MemberModelForm(data)
-        if form.is_valid():
-            #  验证通过,先将头像保存到本地static/media下,在将头像地址返回
-            #  保存头像
-            # username = request.POST.get('username')
-            user = User.objects.get(pk=request.session.get("ID"))
-            user.head = request.FILES['img']
-            user.save()
-            return JsonResponse({"status": "ok", "head": str(user.head)})
+        #  验证通过,先将头像保存到本地static/media下,在将头像地址返回
+        #  保存头像
 
-            # 操作数据库
-            # 头像地址
-            img = f'media/{tel}.png'
-            my_name = form.cleaned_data.get('my_name')
-            sex = request.POST.get('sex')
-            my_birthday = request.POST.get('my_birthday')
-            school = request.POST.get('school')
-            my_home = request.POST.get('my_home')
-            address = request.POST.get('address')
-            # 保存提交个人信息
-            Users.objects.filter(username=username).update(my_name=my_name,
-                                                           img=img,
-                                                           sex=sex,
-                                                           my_birthday=my_birthday,
-                                                           school=school,
-                                                           my_home=my_home,
-                                                           address=address)
-            return redirect('用户:个人资料')
-        else:
-            # 错误信息提示
-            return render(request, 'user/member.html', context={'form': form})
+        # 保存提交个人信息
+        user.update(my_name=data['my_name'],
+                    sex=data['sex'],
+                    my_birthday=data['my_birthday'],
+                    school=data['school'],
+                    my_home=data['my_home'],
+                    address=data['address'])
+        # return redirect('用户:个人资料')
+
+        # 错误信息提示
+        context = {
+            'user': user
+        }
+        return render(request, 'user/member.html', context=context)
+
+
+# 上传头像
+@csrf_exempt
+def headimg(request):
+    user = User.objects.get(pk=request.session.get("ID"))
+    user.head = request.FILES['file']
+    user.save()
+    return JsonResponse({"status": "ok", "head": str(user.head)})
 
 
 # 忘记密码视图类
@@ -165,12 +163,12 @@ class ForgetPassView(View):
             Users.objects.filter(username=username).update(password=password)
             # 操作数据库
             # 返回到登录
-            return redirect('用户:登录')
+            return redirect('用户:忘记密码')
         else:
             # 合成响应
             # 验证不通过,返回注册页面
             # 进入到注册页面
-            return render(request, 'user/reg.html', {'form': login_form})
+            return render(request, 'user/forgetpassword.html', {'form': login_form})
 
 
 # 用户验证码初版
@@ -222,7 +220,7 @@ class SendMsm(View):
 
         # >>>1. 生成随机验证码字符串
         random_code = "".join([str(random.randint(0, 9)) for _ in range(6)])
-        # print("---随机验证码为==={}---".format(random_code))
+        print("---随机验证码为==={}---".format(random_code))
 
         # >>>2. 保存验证码到redis中
         # 获取连接

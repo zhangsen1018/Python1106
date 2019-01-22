@@ -2,6 +2,7 @@ from datetime import date
 
 from django import forms
 from django.core.validators import RegexValidator
+from django_redis import get_redis_connection
 
 from user.models import Users
 from market import set_password
@@ -12,7 +13,7 @@ class RegisterModelForm(forms.ModelForm):
     # 用户手机号
     username = forms.CharField(
         error_messages={
-            "required": "手机必填",
+            "required": "手机号必填",
         },
         validators=[
             RegexValidator(r'^1[3-9]\d{9}$', "手机号码格式错误!")
@@ -31,10 +32,20 @@ class RegisterModelForm(forms.ModelForm):
     repassword = forms.CharField(max_length=16,
                                  min_length=8,
                                  error_messages={
-                                     'required': '必须填写密码',
+                                     'required': '必须填写确认密码',
                                      'min_length': '密码最小长度必须为8位',
                                      'max_length': '密码最大长度不能超过16位',
                                  })
+
+    # 验证码
+    captcha = forms.CharField(max_length=6,
+                              error_messages={
+                                  'required': "验证码必须填写"
+                              })
+    # 用户协议
+    agree = forms.BooleanField(error_messages={
+        'required': '必须同意用户协议'
+    })
 
     # 模型用的 Users
     class Meta:
@@ -44,12 +55,12 @@ class RegisterModelForm(forms.ModelForm):
         # 提示错误信息
         error_messages = {
             "username": {
-                'required': '用户名必须填写',
-                'max_length': '用户名长度不能大于11',
+                'required': '手机号必须填写',
+                'max_length': '手机号长度不能大于11',
             }
         }
 
-    # 验证在数据库中 验证手机号是否存在
+    # 验证在数据库中 验证手机号是唯一
     def clean_username(self):  # 验证手机号是否已经被注册
         username = self.cleaned_data.get('username')
         flag = Users.objects.filter(username=username).exists()
@@ -68,11 +79,28 @@ class RegisterModelForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
         repassword = self.cleaned_data.get('repassword')
 
+        # 综合校验 验证码 放在这里最合适,不用考虑先后顺序
+        # 验证 用户传入的验证码和redis中的是否一样
+        # 用户传入的验证码
         if password and repassword and password != repassword:
             # 在密码和确认密码,并且确认密码和密码不一样的时候,提示错误信息
             raise forms.ValidationError({'repassword': "两次密码不一致!"})
-            # 将用户信息保存到cleaned_data中
-            # 返回清洗后的所有数据
+
+        try:
+            captcha = self.cleaned_data.get('captcha')
+            username = self.cleaned_data.get('username', '')
+            # 获取redis中的
+            r = get_redis_connection()
+            random_code = r.get(username)  # 在redis里的数据是二进制, 转码
+            random_code = random_code.decode('utf-8')
+            # 验证两个数据是否一致
+            if captcha and captcha != random_code:
+                raise forms.ValidationError({"captcha": "验证码输入错误!"})
+        except:
+            raise forms.ValidationError({"captcha": "验证码输入错误!"})
+
+        # 将用户信息保存到cleaned_data中
+        # 返回清洗后的所有数据
         return self.cleaned_data
 
 
