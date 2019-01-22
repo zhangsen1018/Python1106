@@ -4,7 +4,6 @@ import uuid
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from DB.dxyzm import send_sms
 
 from django.views import View
 from django_redis import get_redis_connection
@@ -12,7 +11,7 @@ from django_redis import get_redis_connection
 from DB.base_view import BaseVerifyView
 from market import set_password
 from user.forms import RegisterModelForm, LoginModelForm
-from user.helps import login
+from user.helps import login, send_sms
 
 from user.models import Users
 
@@ -201,7 +200,8 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
 #         return JsonResponse({'err': 0, "erra": "请求方式错误"})
 
 class SendMsm(View):
-    # 发送短消验证码
+    """发送短信验证码"""
+
     def get(self, request):
         pass
 
@@ -223,7 +223,7 @@ class SendMsm(View):
 
         # >>>1. 生成随机验证码字符串
         random_code = "".join([str(random.randint(0, 9)) for _ in range(6)])
-        print("-----随机验证码为==={}-----".format(random_code))
+        # print("=============随机验证码为==={}==============".format(random_code))
 
         # >>>2. 保存验证码到redis中
         # 获取连接
@@ -231,23 +231,26 @@ class SendMsm(View):
         # 保存手机号码对应的验证码
         r.set(username, random_code)
         r.expire(username, 60)  # 设置60秒后过期
-        __business_id = uuid.uuid1()
-        # 信息
-        params = "{\"code\":\"%s\",\"product\":\" --电商-- \"}" %  random_code
-        send_sms(__business_id, username, "注册验证", "SMS_2245271", params)
 
-        # 首先获取当前手机号码的发送次数
-        key_times = "{}_times".format(username)
-        now_times = r.get(key_times)  # 从redis获取的二进制,需要转换
-        # print(int(now_times))
-        if now_times is None or int(now_times) < 5:
-            # 保存手机发送验证码的次数, 不能超过5次
-            r.incr(key_times)
-            # 设置一个过期时间
-            r.expire(key_times, 3600)  # 一个小时后再发送
-        else:
-            # 返回,告知用户发送次数过多
-            return JsonResponse({"error": 1, "errmsg": "发送次数过多"})
+        # # 首先获取当前手机号码的发送次数
+        # key_times = "{}_times".format(username)
+        # now_times = r.get(key_times)  # 从redis获取的二进制,需要转换
+        # # print(int(now_times))
+        # if now_times is None or int(now_times) < 10:
+        #     # 保存手机发送验证码的次数, 不能超过10次
+        #     r.incr(key_times)
+        #     # 设置一个过期时间
+        #     r.expire(key_times, 3600)  # 一个小时后再发送
+        # else:
+        #     # 返回,告知用户发送次数过多
+        #     return JsonResponse({"error": 1, "errmsg": "发送次数过多"})
+
+        # >>>3. 接入运营商
+        __business_id = uuid.uuid1()
+        params = "{\"code\":\"%s\",\"product\":\"强哥婚介所\"}" % random_code
+        # print(params)
+        rs = send_sms(__business_id, username, "注册验证", "SMS_2245271", params)
+        print(rs.decode('utf-8'))
 
         # 3. 合成响应
         return JsonResponse({'error': 0})
