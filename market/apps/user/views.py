@@ -2,6 +2,7 @@ import random
 import re
 import uuid
 
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
@@ -10,7 +11,7 @@ from django_redis import get_redis_connection
 
 from DB.base_view import BaseVerifyView
 from market import set_password
-from user.forms import RegisterModelForm, LoginModelForm
+from user.forms import RegisterModelForm, LoginModelForm, MemberModelForm
 from user.helps import login, send_sms
 
 from user.models import Users
@@ -64,21 +65,9 @@ class LoginView(View):  # 登录 直接定义get 和 post
             # 从session中得到数据
             # 单独创建方法保存session,更新资料
             user = login_form.cleaned_data.get('user')
-            # request.session['ID'] = user.pk
-            # request.session['username'] = user.username
-            us = Users.objects.filter(user=user)
-            if us:
-                password = login_form.cleaned_data.get('password')
-                pwd = set_password(password)
-                if Users.objects.filter(pwd=pwd):
-                    # 操作数据库
-                    # 返回到首页
-                    return redirect('用户:个人中心')
-            else:
-                context = {
-                    'context': '用户名或者密码错误'
-                }
-                return render(request, 'user/login.html', context=context)
+            request.session['ID'] = user.pk
+            request.session['username'] = user.username
+            return redirect('用户:个人中心')
         else:
             # 合成响应
             # 进入到登录页面
@@ -104,12 +93,13 @@ class MemberView(BaseVerifyView):  # 个人中心视图类
         pass
 
 
-class PersonalCenterView(BaseVerifyView):  # 个人资料视图类
+# 个人资料视图类
+class PersonalCenterView(BaseVerifyView):
     def get(self, request):
         # 读取数据,渲染页面
-        # username=request.session.get('username')
-        username = 17629287226
-        user = Users.objects.get(username=username)
+        user_id = request.session.get('ID')
+        # username = 17629287226
+        user = Users.objects.get(pk=user_id)
         context = {
             'user': user
         }
@@ -122,11 +112,16 @@ class PersonalCenterView(BaseVerifyView):  # 个人资料视图类
         # 渲染提交的数据
         data = request.POST
         # 验证表单参数合法性 用表单来验证
-        form = RegisterModelForm(data)
+        form = MemberModelForm(data)
         if form.is_valid():
             #  验证通过,先将头像保存到本地static/media下,在将头像地址返回
             #  保存头像
-            username = request.POST.get('username')
+            # username = request.POST.get('username')
+            user = User.objects.get(pk=request.session.get("ID"))
+            user.head = request.FILES['img']
+            user.save()
+            return JsonResponse({"status": "ok", "head": str(user.head)})
+
             # 操作数据库
             # 头像地址
             img = f'media/{tel}.png'
@@ -150,7 +145,8 @@ class PersonalCenterView(BaseVerifyView):  # 个人资料视图类
             return render(request, 'user/member.html', context={'form': form})
 
 
-class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
+# 忘记密码视图类
+class ForgetPassView(View):
     def get(self, request):
         return render(request, 'user/forgetpassword.html')
 
@@ -177,7 +173,8 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
             return render(request, 'user/reg.html', {'form': login_form})
 
 
-# def user_code(request): # 用户验证码初版
+# 用户验证码初版
+# def user_code(request):
 #     if request.method == 'POST':
 #         sj = request.POST.get('username', '')
 #         resj = re.compile('^1[3-9]\d{9}$')
@@ -199,8 +196,10 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
 #     else:
 #         return JsonResponse({'err': 0, "erra": "请求方式错误"})
 
+# 发送短信验证码
+
+# 发送短信验证码
 class SendMsm(View):
-    """发送短信验证码"""
 
     def get(self, request):
         pass
@@ -223,7 +222,7 @@ class SendMsm(View):
 
         # >>>1. 生成随机验证码字符串
         random_code = "".join([str(random.randint(0, 9)) for _ in range(6)])
-        # print("=============随机验证码为==={}==============".format(random_code))
+        # print("---随机验证码为==={}---".format(random_code))
 
         # >>>2. 保存验证码到redis中
         # 获取连接
@@ -247,7 +246,7 @@ class SendMsm(View):
 
         # >>>3. 接入运营商
         __business_id = uuid.uuid1()
-        params = "{\"code\":\"%s\",\"product\":\"强哥婚介所\"}" % random_code
+        params = "{\"code\":\"%s\",\"product\":\" 张森爸爸的小可爱 \"}" % random_code
         # print(params)
         rs = send_sms(__business_id, username, "注册验证", "SMS_2245271", params)
         print(rs.decode('utf-8'))
