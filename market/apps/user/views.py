@@ -147,7 +147,7 @@ class PersonalCenterView(BaseVerifyView):  # 个人资料视图类
                                                            address=address)
             return redirect('用户:个人资料')
         else:
-                # 错误信息提示
+            # 错误信息提示
             return render(request, 'user/member.html', context={'form': form})
 
 
@@ -164,7 +164,7 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
             # 验证成功
             # 数据合法
             password = login_form.cleaned_data['password']
-            username= login_form.cleaned_data.get('username')
+            username = login_form.cleaned_data.get('username')
             password = set_password(password)
             # 更新用户密码
             Users.objects.filter(username=username).update(password=password)
@@ -178,24 +178,76 @@ class ForgetPassView(BaseVerifyView):  # 忘记密码视图类
             return render(request, 'user/reg.html', {'form': login_form})
 
 
-def user_code(request):
-    if request.method == 'POST':
-        sj = request.POST.get('username', '')
-        resj = re.compile('^1[3-9]\d{9}$')
-        re_sj = re.search(resj, sj)
-        if re_sj:
-            codesj = "".join([str(random.randint(0, 9)) for _ in range(4)])
-            # print([str(random.randint(0, 9)) for _ in range(4)])
-            # print(codesj)
-            a = get_redis_connection("default")
-            a.set(sj, codesj)
-            a.expire(sj, 180)
-            __business_id = uuid.uuid1()
-            # 信息
-            params = "{\"code\":\"%s\",\"product\":\"电商 \"}" % codesj
-            send_sms(__business_id, sj, "注册验证", "SMS_2245271", params)
-            return JsonResponse({"ok": 1})
+# def user_code(request): # 用户验证码初版
+#     if request.method == 'POST':
+#         sj = request.POST.get('username', '')
+#         resj = re.compile('^1[3-9]\d{9}$')
+#         re_sj = re.search(resj, sj)
+#         if re_sj:
+#             codesj = "".join([str(random.randint(0, 9)) for _ in range(4)])
+#             # print([str(random.randint(0, 9)) for _ in range(4)])
+#             # print(codesj)
+#             a = get_redis_connection("default")
+#             a.set(sj, codesj)
+#             a.expire(sj, 180)
+#             __business_id = uuid.uuid1()
+#             # 信息
+#             params = "{\"code\":\"%s\",\"product\":\" --电商-- \"}" % codesj
+#             send_sms(__business_id, sj, "注册验证", "SMS_2245271", params)
+#             return JsonResponse({"ok": 1})
+#         else:
+#             return JsonResponse({'err': 0, "erra": "cw"})
+#     else:
+#         return JsonResponse({'err': 0, "erra": "请求方式错误"})
+
+class SendMsm(View):
+    # 发送短消验证码
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        # 1, 接收参数
+        username = request.POST.get('username', '')
+        rs = re.search('^1[3-9]\d{9}$', username)
+        # 判断参数合法性
+        if rs is None:
+            return JsonResponse({'error': 1, 'errmsg': '电话号码格式错误!'})
+        # 2. 处理数据
+
+        # 模拟,最后接入运营商
+        """
+            1. 生成随机验证码
+            2. 保存验证码 保存到redis中, 存取速度快,并且可以方便的设置有效时间
+            3. 接入运营商
+        """
+
+        # >>>1. 生成随机验证码字符串
+        random_code = "".join([str(random.randint(0, 9)) for _ in range(6)])
+        print("-----随机验证码为==={}-----".format(random_code))
+
+        # >>>2. 保存验证码到redis中
+        # 获取连接
+        r = get_redis_connection()
+        # 保存手机号码对应的验证码
+        r.set(username, random_code)
+        r.expire(username, 60)  # 设置60秒后过期
+        __business_id = uuid.uuid1()
+        # 信息
+        params = "{\"code\":\"%s\",\"product\":\" --电商-- \"}" %  random_code
+        send_sms(__business_id, username, "注册验证", "SMS_2245271", params)
+
+        # 首先获取当前手机号码的发送次数
+        key_times = "{}_times".format(username)
+        now_times = r.get(key_times)  # 从redis获取的二进制,需要转换
+        # print(int(now_times))
+        if now_times is None or int(now_times) < 5:
+            # 保存手机发送验证码的次数, 不能超过5次
+            r.incr(key_times)
+            # 设置一个过期时间
+            r.expire(key_times, 3600)  # 一个小时后再发送
         else:
-            return JsonResponse({'err': 0, "erra": "cw"})
-    else:
-        return JsonResponse({'err': 0, "erra": "请求方式错误"})
+            # 返回,告知用户发送次数过多
+            return JsonResponse({"error": 1, "errmsg": "发送次数过多"})
+
+        # 3. 合成响应
+        return JsonResponse({'error': 0})
