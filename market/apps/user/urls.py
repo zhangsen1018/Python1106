@@ -1,7 +1,8 @@
 from django.conf.urls import url
 
 from DB.base_view import BaseVerifyView
-from user.views import LoginView, RegisterView, index, MemberView, ForgetPassView, PersonalCenterView, SendMsm
+from user.views import LoginView, RegisterView, index, MemberView, ForgetPassView, PersonalCenterView, SendMsm, \
+    ResetPasswordView, saftystep, ResetPhoneView
 
 urlpatterns = [
     url(r'^register/$', RegisterView.as_view(), name="用户注册"),
@@ -12,6 +13,9 @@ urlpatterns = [
     url(r'^forgetpassword/$', ForgetPassView.as_view(), name="忘记密码"),
     # url(r'^code/$', user_code, name="验证码"),
     url(r'^SendMsm/$', SendMsm.as_view(), name="验证码"),
+    url(r'^resetpassword/$', ResetPasswordView.as_view(), name="重置密码"),
+    url(r"^saftystep/$", saftystep, name='安全设置页'),
+    url(r"^resetphone/$", ResetPhoneView.as_view(), name='重置手机号码'),
 
 
 
