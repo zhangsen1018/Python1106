@@ -3,7 +3,7 @@ import re
 import uuid
 
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
 from django.views import View
@@ -12,8 +12,8 @@ from django_redis import get_redis_connection
 
 from DB.base_view import BaseVerifyView
 from market import set_password
-from user.forms import RegisterModelForm, LoginModelForm, MemberModelForm
-from user.helps import login, send_sms
+from user.forms import RegisterModelForm, LoginModelForm, MemberModelForm, ResetPassWordForm
+from user.helps import login, send_sms, check_login
 
 from user.models import Users
 
@@ -38,10 +38,14 @@ class RegisterView(View):  # 注册 直接定义get 和 post
             cleaned_data = form.cleaned_data
             # 创建一个注册用户
             # 得到清洗过的数据
-            user = Users()
-            user.username = cleaned_data.get('username')
-            user.password = set_password(cleaned_data.get('password'))
-            user.save()
+            # user = Users()
+            # user.username = cleaned_data.get('username')
+            # user.password = set_password(cleaned_data.get('password'))
+            # user.save()
+            username = cleaned_data.get('username')
+            password = set_password(cleaned_data.get('password'))
+            # 将数据保存到数据库
+            Users.objects.create(username=username, password=password)
             return redirect('用户:用户登录')
         else:
             # 错误信息提示
@@ -66,8 +70,9 @@ class LoginView(View):  # 登录 直接定义get 和 post
             # 从session中得到数据
             # 单独创建方法保存session,更新资料
             user = login_form.cleaned_data.get('user')
-            request.session['ID'] = user.pk
-            request.session['username'] = user.username
+            # request.session['ID'] = user.pk
+            # request.session['username'] = user.username
+            login(request,user)
             return redirect('用户:个人中心')
         else:
             # 合成响应
@@ -96,11 +101,15 @@ class MemberView(BaseVerifyView):  # 个人中心视图类
 
 # 个人资料视图类
 class PersonalCenterView(BaseVerifyView):
+    # 个人资料,需要登录后才能访问
     def get(self, request):
-        # 读取数据,渲染页面
+        # 读取数据用户id
         user_id = request.session.get('ID')
         # username = 17629287226
+        # 获取用户资料
         user = Users.objects.get(pk=user_id)
+        # 渲染到页面
+        # 用户的请求方式是get形式, 要将用户的个人信息回显到个人信息页面
         context = {
             'user': user
         }
@@ -108,39 +117,38 @@ class PersonalCenterView(BaseVerifyView):
 
     # @method_decorator(check_login)
     def post(self, request):
-        # 完成用户信息的注册
+        # 完成用户信息的更新
         # 接收参数
         # 渲染提交的数据
         data = request.POST
+        user_img = request.FILES.get('use_img')
         user_id = request.session.get('ID')
-        user = User.objects.filter(id=user_id)
-        # 验证表单参数合法性 用表单来验证
-        #  验证通过,先将头像保存到本地static/media下,在将头像地址返回
-        #  保存头像
+        # 操作数据
+        user = Users.objects.get(pk=user_id)
+        user.my_name = data.get('my_name')
+        user.sex = data.get('sex')
+        # user.my_birthday = data.get('my_birthday')
+        user.school = data.get('school')
+        user.my_home = data.get('my_home')
+        user.address = data.get('address')
+        if user_img is not None:
+            user.use_img = user_img
+        user.save()
 
-        # 保存提交个人信息
-        user.update(my_name=data['my_name'],
-                    sex=data['sex'],
-                    my_birthday=data['my_birthday'],
-                    school=data['school'],
-                    my_home=data['my_home'],
-                    address=data['address'])
-        # return redirect('用户:个人资料')
+        # 同时修改session
+        login(request, user)
 
-        # 错误信息提示
-        context = {
-            'user': user
-        }
-        return render(request, 'user/member.html', context=context)
+        # 合成响应
+        return redirect('用户:个人中心')
 
 
-# 上传头像
-@csrf_exempt
-def headimg(request):
-    user = User.objects.get(pk=request.session.get("ID"))
-    user.head = request.FILES['file']
-    user.save()
-    return JsonResponse({"status": "ok", "head": str(user.head)})
+# # 上传头像
+# @csrf_exempt
+# def headimg(request):
+#     user = User.objects.get(pk=request.session.get("ID"))
+#     user.head = request.FILES['file']
+#     user.save()
+#     return JsonResponse({"status": "ok", "head": str(user.head)})
 
 
 # 忘记密码视图类
@@ -251,3 +259,65 @@ class SendMsm(View):
 
         # 3. 合成响应
         return JsonResponse({'error': 0})
+
+
+# 定义一个函数,实现对安全设置选项页的展示
+@check_login
+def saftystep(request):
+    return render(request, 'user/saftystep.html')
+
+
+# 定义一个类,实现对用户密码的修改
+class ResetPasswordView(BaseVerifyView):
+    # 用户的请求方式是get形式, 展示添加修改密码的表单
+    def get(self, request):
+        id = request.session.get('id')
+        return render(request, 'user/password.html', {"id": id})
+
+    # 用户的请求方式是post方式时
+    def post(self, request):
+        # 接收用户传过来的参数
+        data = request.POST
+        # 创建一个对象来检查信息的合法性
+        form = ResetPassWordForm(data)
+        # 验证数据的合法性
+        if form.is_valid():
+            # 数据合法
+            # 接收清洗后的数据
+            id = request.session.get('id')
+            if form.check_password(request):
+                # 密码一致,将数据写入到数据库当中
+                # 将密码加密
+                password1 = set_password(form.cleaned_data.get('password1'))
+                # 将密码写到数据库
+                Users.objects.filter(pk=id).update(password=password1)
+                # 跳转到登录页面
+                return redirect('用户:用户登录')
+            else:
+                return render(request, 'user/password.html', {"form": form})
+
+        else:
+            # 数据不合法, 继续修改
+            return render(request, 'user/password.html/', {"form": form})
+
+
+"""
+# 密码一致,将数据写入到数据库当中
+# 将密码加密
+password1 = set_password(form.cleaned_data.get('password1'))
+# 将密码写到数据库
+Users.objects.filter(pk=id).update(password=password1)
+# 跳转到登录页面
+return redirect('users:用户登录')
+"""  # 利用密码查找密码,没有用id去查找
+
+
+# 定义一个修改用户手机号码的类
+class ResetPhoneView(BaseVerifyView):
+    # 用户以GET方式请求时
+    def get(self, request):
+        return render(request, 'user/boundphone.html')
+
+    # 当用户以post方式请求时
+    def post(self, request):
+        return HttpResponse("ok")
