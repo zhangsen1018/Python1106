@@ -16,11 +16,11 @@
     </header>
     <div style="height: 49px;"></div>
     <div class="member">
-        <div class="mem-tit">15078921546
+        <div class="mem-tit">{{ request.session.username }}
             <a href="step.html" class="step"><img src="{% static 'images/step.png' %}" width="26"/></a>
         </div>
         <div class="mem-pic">
-            <div class="mem-pic-bg" style="background-image: url(images/memtx.png);"></div>
+            <div class="mem-pic-bg" style="background-image: url({{  MEDIA_URL  }}{{ request.session.use_img }});"></div>
         </div>
         <ul class="member-menu">
             <li>
@@ -74,7 +74,7 @@
                 <p>个人资料</p></a></li>
             <li><a href="gladdress.html"> <img src="{% static 'images/1-icon5.png' %}">
                 <p>收货地址</p></a></li>
-            <li><a href="saftystep.html"> <img src="{% static 'images/1-icon6.png' %}">
+            <li><a href="{% url '用户:安全设置页' %}"> <img src="{% static 'images/1-icon6.png' %}">
                 <p>安全设置</p></a></li>
             <li><a href="money.html"> <img src="{% static 'images/1-icon7.png' %}">
                 <p>我的钱包</p></a></li>

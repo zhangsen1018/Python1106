@@ -41,6 +41,7 @@ def check_login(func):
 def login(request, user):  # 保存session的方法
     request.session['ID'] = user.pk
     request.session['username'] = user.username
+    request.session['use_img'] = user.use_img
     request.session.set_expiry(0)  # 设置session时间,关闭浏览器就消失
 
 

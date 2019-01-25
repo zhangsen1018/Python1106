@@ -219,3 +219,96 @@ class MemberModelForm(forms.ModelForm):
                 'max_length': '手机号长度不能大于11',
             }
         }
+
+
+# # 创建一个普通的Form类来验证用户提交的修改信息
+# class UserEditForm(forms.Form):
+#     my_name = forms.CharField(max_length=50,
+#                               min_length=2,
+#                               error_messages={
+#                                   "required": "用户昵称必填!",
+#                                   "max_length": "昵称最大长度为50位!",
+#                                   "min_length": "昵称最小长度为2位!",
+#                               })
+#     my_birthday = forms.CharField(error_messages={
+#         "required": "用户生日必填!"
+#     })
+#     my_home = forms.CharField(error_messages={
+#         "required": "用户地址必填!"
+#     })
+#     address = forms.CharField(error_messages={
+#         "required": "用户家乡必填!"
+#     })
+#     # tel = forms.CharField(error_messages={
+#     #                                 "required": "手机号必填!"
+#     #                         })
+#     school = forms.CharField(error_messages={
+#         "required": "学校必填!"
+#     })
+#     sex = forms.ChoiceField(choices=((1, '男'), (2, '女')))
+
+
+# 创建一个验证用户重置登录密码的Form验证类
+class ResetPassWordForm(forms.Form):
+    password = forms.CharField(max_length=16,
+                               min_length=8,
+                               error_messages={
+                                   "required": "密码必须填写!",
+                                   "min_length": "密码最少要要8个字符!",
+                                   "max_length": "密码最多16个字符!"
+                               })
+    password1 = forms.CharField(max_length=16,
+                                min_length=8,
+                                error_messages={
+                                    "required": "密码必须填写!",
+                                    "min_length": "密码最少要要8个字符!",
+                                    "max_length": "密码最多16个字符!",
+                                })
+    password2 = forms.CharField(max_length=16,
+                                min_length=8,
+                                error_messages={
+                                    "required": "密码必须填写!",
+                                    "min_length": "密码最少要要8个字符!",
+                                    "max_length": "密码最多16个字符!",
+                                })
+
+    """   # 验证旧密码
+    def clean_password(self):
+        # 接收用户传过来的密码
+        password = self.cleaned_data.get('password')
+        # 将密码加密
+        password = set_password(password)
+        flag = Users.objects.filter(password=password).exists()
+        # 对结果进行判断
+        if not flag:
+            # 查询到相关的数据, 抛出异常,提示用户手机号码已经被注册,请输入新的手机号或者前往登录界面
+            raise forms.ValidationError('旧密码错误')
+        else:
+            return password
+            """
+
+    # 验证两次新密码是否符合要求
+    def clean(self):
+        # 获取用户两次输入的密码
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        # 判断两次密码是否一致
+        if password1 and password2 and password1 != password2:
+            # 密码不一致
+            raise forms.ValidationError({"password2": "两次输入的密码不一致!"})
+        else:
+            return self.cleaned_data
+
+    # 验证旧密码
+    def check_password(self, request):
+        # 接受session上的id值
+        id = request.session.get("id")
+        # 到数据库查询用户的密码
+        password = Users.objects.get(pk=id).password
+        # 判断用户输入的旧密码和数据库的密码是否一致
+        if password != set_password(self.cleaned_data.get('password')):
+            # 密码不一致
+            self.add_error('password', '旧密码错误')
+            return False
+        else:
+            return True
