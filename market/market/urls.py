@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^user/', include('user.urls', namespace='用户')),
     url(r'^goods/', include('goods.urls', namespace='goods')),
+    url(r'^cart/', include('cart.urls', namespace='cart')),
     url(r'^$', IndexView.as_view()),
 ]

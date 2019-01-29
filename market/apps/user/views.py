@@ -12,10 +12,11 @@ from django_redis import get_redis_connection
 
 from DB.base_view import BaseVerifyView
 from market import set_password
-from user.forms import RegisterModelForm, LoginModelForm, MemberModelForm, ResetPassWordForm
+from user.forms import RegisterModelForm, LoginModelForm, MemberModelForm, ResetPassWordForm, AddressEditModelForm, \
+    AddressModelForm
 from user.helps import login, send_sms, check_login
 
-from user.models import Users
+from user.models import Users, SpAddress
 
 
 # 定义一个注册视图类
@@ -72,7 +73,15 @@ class LoginView(View):  # 登录 直接定义get 和 post
             user = login_form.cleaned_data.get('user')
             # request.session['ID'] = user.pk
             # request.session['username'] = user.username
-            login(request,user)
+            login(request, user)
+
+            referer = request.session.get('referer')
+            if referer:
+                # 跳转回去
+                # 删除session
+                del request.session['referer']
+                return redirect(referer)
+
             return redirect('用户:个人中心')
         else:
             # 合成响应
@@ -321,3 +330,114 @@ class ResetPhoneView(BaseVerifyView):
     # 当用户以post方式请求时
     def post(self, request):
         return HttpResponse("ok")
+
+
+class AddressView(BaseVerifyView):
+    # 收货地址列表页
+
+    def get(self, request):
+        # 获取收货地址,所有的, 当前用户的
+        user_id = request.session.get("ID")
+        # 查询
+        addresses = SpAddress.objects.filter(user_id=user_id, is_delete=False).order_by("-isDefault")
+
+        # 渲染数据
+        context = {
+            'addresses': addresses
+        }
+        return render(request, 'user/gladdress.html', context)
+
+    def post(self, request):
+        pass
+
+
+class AddressAddView(BaseVerifyView):
+
+    # 收货地址添加页
+
+    def get(self, request):
+        return render(request, 'user/address.html')
+
+    def post(self, request):
+        # 接收参数
+        data = request.POST.dict()
+        data['user_id'] = request.session.get("ID")
+        # 验证参数
+        form = AddressModelForm(data)
+        # 处理数据
+        if form.is_valid():
+            # cleaned_data = form.cleaned_data
+            # # cleaned_data['user'] = SpUser.objects.get(pk=request.session.get("ID"))
+            # cleaned_data['user_id'] = request.session.get("ID")
+            # SpAddress.objects.create(**cleaned_data)
+            form.instance.user_id = request.session.get("ID")
+            # modelform对象上有个save()方法,直接就能保存数据
+            form.save()
+            # 返回响应 返回收货地址列表页面
+            return redirect("用户:收货地址首页")
+        else:
+            context = {
+                "form": form,
+            }
+            return render(request, "user/address.html", context)
+
+
+class AddressEditView(BaseVerifyView):
+
+    # 收货地址修改页
+
+    def get(self, request, id):
+        # 查询当前用户的 当前id的收货地址
+        user_id = request.session.get("ID")
+        # 查询
+        try:
+            address = SpAddress.objects.get(user_id=user_id, pk=id)
+        except SpAddress.DoesNotExist:
+            return redirect("用户:收货地址首页")
+
+        # 渲染到页面
+        context = {
+            "address": address
+        }
+
+        return render(request, 'user/address_edit.html', context)
+
+    def post(self, request, id):
+        # 接收数据
+        data = request.POST.dict()
+        # 验证数据
+        user_id = request.session.get("ID")
+        data['user_id'] = user_id
+        form = AddressEditModelForm(data)
+        # 处理数据
+        if form.is_valid():
+            # 更新 根据主键id
+            cleaned_data = form.cleaned_data
+            id = data.get('id')
+            SpAddress.objects.filter(user_id=user_id, pk=id).update(**cleaned_data)
+
+            # 跳转
+            return redirect("用户:收货地址首页")
+        else:
+            # 返回响应
+            context = {
+                "form": form,
+                "address": data
+            }
+            return render(request, 'user/address_edit.html', context)
+
+
+def delAddress(request):
+    # 删除收货地址
+    if request.method == "POST":
+        # 必须登陆
+        user_id = request.session.get('ID')
+        id = request.POST.get("id")
+        if user_id is None:
+            return JsonResponse({"code": 1, "errmsg": "没有登陆!"})
+        # 删除的时候最好 用户的id条件加上
+        SpAddress.objects.filter(user_id=user_id, pk=id).update(is_delete=True)
+        # 返回结果
+        return JsonResponse({"code": 0})
+    else:
+        return JsonResponse({"code": 2, "errmsg": "请求方式错误"})

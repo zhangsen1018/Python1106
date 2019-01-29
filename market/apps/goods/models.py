@@ -9,7 +9,7 @@ from django.db import models
 # Create your models here.
 from DB.base_model import Base_model
 
-shelves = (
+is_on_sale_choices = (
     (False, "下架"),
     (True, "上架"),
 )
@@ -71,11 +71,11 @@ class GoodsSPU(Base_model):
 # 单位名（斤，箱）
 # 继承基础Base_model模型
 class Unit(Base_model):
-    unitname = models.CharField(max_length=10,
-                                verbose_name='单位名')
+    name = models.CharField(max_length=10,
+                            verbose_name='单位名')
 
     def __str__(self):
-        return self.unitname
+        return self.name
 
     class Meta:
         db_table = 'Unit'
@@ -133,11 +133,11 @@ class GoodsSKU(Base_model):
     #     (1, '已上架'),
     # )
     is_on_sale = models.BooleanField(verbose_name="是否上架",
-                                     choices=shelves,
+                                     choices=is_on_sale_choices,
                                      default=False)
     # 商品分类ID  外键  Category
     category = models.ForeignKey(to='Category',
-                                   verbose_name='商品分类')
+                                 verbose_name='商品分类')
     # 商品spu_id   外键  GoodsSPU
     goods_spu = models.ForeignKey(to='GoodsSPU', verbose_name='商品SPU')
 
@@ -247,10 +247,10 @@ class ActivityZone(Base_model):
     order = models.SmallIntegerField(verbose_name="排序",
                                      default=0,
                                      )
-    shelves = models.BooleanField(verbose_name="上否上线",
-                                  choices=shelves,
-                                  default=0,
-                                  )
+    is_on_sale = models.BooleanField(verbose_name="上否上线",
+                                     choices=is_on_sale_choices,
+                                     default=0,
+                                     )
     goods_sku = models.ManyToManyField(to="GoodsSKU", verbose_name="商品")
 
     def __str__(self):
@@ -259,4 +259,16 @@ class ActivityZone(Base_model):
     class Meta:
         db_table = 'ActivityZone'
         verbose_name = "活动专区管理"
+        verbose_name_plural = verbose_name
+
+
+class ActivityZoneGoods(Base_model):
+    # 首页活动专区商品列表
+
+    zone = models.ForeignKey(to="ActivityZone", verbose_name="活动专区")
+    goods_sku = models.ForeignKey(to="GoodsSKU", verbose_name="商品SKU")
+
+    class Meta:
+        db_table = 'ActivityZoneGoods'
+        verbose_name = "首页活动专区商品列表"
         verbose_name_plural = verbose_name

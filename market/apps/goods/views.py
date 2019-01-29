@@ -1,17 +1,36 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
 from django.shortcuts import render
 from django.views import View
 
-from goods.models import GoodsSKU, Category
+from goods.models import GoodsSKU, Category, Banner, Activity, ActivityZone
+from cart.helper import get_cart_count
 
 
 class IndexView(View):
     # 商品首页
 
     def get(self, request):
-        return render(request, 'goods/index.html')
+        # 获取轮播
+        banners = Banner.objects.filter(is_delete=False)
+        # 获取活动
+        acts = Activity.objects.filter(is_delete=False)
+
+        # 获取特色专区
+        act_zones = ActivityZone.objects.filter(is_on_sale=True, is_delete=False)
+
+        # 渲染数据
+        context = {
+            "banners": banners,
+            "acts": acts,
+            "act_zones": act_zones,
+        }
+        return render(request, 'goods/index.html', context=context)
+
+    def post(self, request):
+        return HttpResponse('OK')
 
 
 class CategorView(View):
@@ -27,7 +46,7 @@ class CategorView(View):
     #         2: 价格升
     #         3: 价格降
     #         4: 添加时间降
-    #     order_rule = ['pk', '-sale_num', 'price', '-price', '-create_time']
+    #     order_rule = ['pk', '-sale_num', 'price', '-price', '-Create_time']
 
     def get(self, request, cate_id, order):
         # 查询所有的分类 默认为0
@@ -57,7 +76,7 @@ class CategorView(View):
         order = int(order)
 
         # 排序规则列表
-        order_rule = ['pk', '-sale_num', 'price', '-price', '-create_time']
+        order_rule = ['pk', '-sale_num', 'price', '-price', '-Create_time']
         # 排序通过上面的列表
         goods_skus = goods_skus.order_by(order_rule[order])
         # if order == 0:
@@ -76,11 +95,15 @@ class CategorView(View):
         # 当排序等于0 时, 通过id来排序,-->最新数据的新品
         #     goods_skus = goods_skus.order_by("-create_time")
 
+        # 获取 当前用户 购物车中商品的总数量
+        cart_count = get_cart_count(request)
+
         context = {
             'categorys': categorys,
             'goods_skus': goods_skus,
             'cate_id': cate_id,
             'order': order,
+            'cart_count': cart_count,
         }
 
         return render(request, 'goods/category.html', context=context)

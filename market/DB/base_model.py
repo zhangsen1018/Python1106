@@ -7,5 +7,5 @@ class Base_model(models.Model):
     Create_time = models.DateField(auto_now_add=True)  # 添加时间
     update_time = models.DateField(auto_now=True)  # 修改时间
 
-    class Meta :
-        abstract=True # 说明这个对象是抽象的,不会迁移
+    class Meta:
+        abstract = True  # 说明这个对象是抽象的,不会迁移

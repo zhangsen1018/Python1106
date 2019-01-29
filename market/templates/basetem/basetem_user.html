@@ -21,7 +21,7 @@
     <script src="{% static 'js/time.js' %}"></script>
     <script src="{% static 'js/time.js' %}"></script>
     <script src="{% static 'js/popup.mini.js' %}"></script>
-    <script src="{% static 'js/amazeui.min.js' %}"></script>
+
     {% block head_css %}
         {#      添加css      #}
     {% endblock %}
@@ -56,10 +56,10 @@
     <input type="text" name="mobile" id="mobile" placeholder="请输入用户名/手机号" class="login-name">
     <input type="password" name="password" id="password" placeholder="请输入密码" class="login-password">
     <input type="button" class="login-btn" value="我要登录">
-{#    <div class="agree">#}
-{#        <a href="reg.html">免费注册</a>#}
-{#        <a href="forgetpassword.html" class="forget">忘记密码？</a>#}
-{#    </div>#}
+    {#    <div class="agree">#}
+    {#        <a href="reg.html">免费注册</a>#}
+    {#        <a href="forgetpassword.html" class="forget">忘记密码？</a>#}
+    {#    </div>#}
     <div class="line"></div>
     <div class="line-text">第三方账号登录</div>
     <ul class="second-login">
@@ -78,8 +78,8 @@
     (function () {
         new PopUp_api({el: '.index-qd', html: '.qd-box'});
     })()
-
 </script>
+ <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/amazeui.min.js' %}"></script>
 {% block footer_js %}
 

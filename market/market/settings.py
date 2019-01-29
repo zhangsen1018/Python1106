@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     # 添加子应用
     'user.apps.UserConfig',
     'goods.apps.GoodsConfig',
-    'orderform.apps.OrderformConfig',
-    'shopcar.apps.ShopcarConfig',
+    'order.apps.OrderformConfig',
+    'cart.apps.ShopcarConfig',
     'ckeditor',  # 添加ckeditor富文本编辑器
     'ckeditor_uploader',  # 添加ckeditor富文本编辑器文件上传部件
 ]
@@ -136,12 +136,12 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-# 导入静态文件
+# 导入静态文件 设置url, 方便在模板中动态的使用静态文件 {% static '静态文件地址' %} /static/xxx/xx.jpg
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# 设置静态文件根目录  上线的时候使用
+# 设置静态文件根目录,收集静态文件  上线的时候使用
 # STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # 在setting文件中,定义一个变量 叫 MEDIA_URL
@@ -174,6 +174,8 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
+
+# 阿里短信的配置
 ACCESS_KEY_ID = "LTAI2qSiJdWP87em"
 ACCESS_KEY_SECRET = "FzORQ587PgGBoOAdmxzCjaxQi8klUi"
 

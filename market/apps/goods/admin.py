@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from goods.models import Activity, Banner, GoodsSKU, GoodsSPU, Unit, Category, Gallery
+from goods.models import Activity, Banner, GoodsSKU, GoodsSPU, Unit, Category, Gallery, ActivityZoneGoods, ActivityZone
 
 
 # 首页活动表
@@ -29,7 +29,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
     # 对可编辑区域分组,列表里面的字段填写模型的属性，
     fieldsets = (
-        ('活动名称', {"fields": ['activityName']}),
+        ('活动名称', {"fields": ['title']}),
         ('活动图片地址', {"fields": ['img_url']}),
         ('活动的url地址', {"fields": ['url_site']}),
     )
@@ -72,6 +72,7 @@ class BannerAdmin(admin.ModelAdmin):
 class GalleryInline(admin.TabularInline):
     model = Gallery
     extra = 2
+
 
 # 商品SKU表
 @admin.register(GoodsSKU)
@@ -154,16 +155,16 @@ class UnitAdmin(admin.ModelAdmin):
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'unitname', 'Create_time', 'update_time', 'is_delete']
+    list_display = ['id', 'name', 'Create_time', 'update_time', 'is_delete']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'unitname', 'Create_time', 'update_time', 'is_delete']
+    list_display_links = ['id', 'name', 'Create_time', 'update_time', 'is_delete']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['unitname']
+    list_filter = ['name']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['unitname']
+    search_fields = ['name']
 
 
 # 商品分类表
@@ -196,3 +197,14 @@ class CategoryAdmin(admin.ModelAdmin):
     )
 
 
+class ActivityZoneGoodsInline(admin.TabularInline):
+    model = ActivityZoneGoods
+    extra = 2
+
+
+@admin.register(ActivityZone)
+class ActivityZoneAdmin(admin.ModelAdmin):
+    inlines = [
+        ActivityZoneGoodsInline
+
+    ]

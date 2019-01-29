@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from DB.base_view import BaseVerifyView
 from user.views import LoginView, RegisterView, index, MemberView, ForgetPassView, PersonalCenterView, SendMsm, \
-    ResetPasswordView, saftystep, ResetPhoneView
+    ResetPasswordView, saftystep, ResetPhoneView, AddressView, AddressAddView, delAddress, AddressEditView
 
 urlpatterns = [
     url(r'^register/$', RegisterView.as_view(), name="用户注册"),
@@ -16,6 +16,10 @@ urlpatterns = [
     url(r'^resetpassword/$', ResetPasswordView.as_view(), name="重置密码"),
     url(r"^saftystep/$", saftystep, name='安全设置页'),
     url(r"^resetphone/$", ResetPhoneView.as_view(), name='重置手机号码'),
+    url(r'^address/$', AddressView.as_view(), name="收货地址首页"),  # 收货地址首页
+    url(r'^address/add/$', AddressAddView.as_view(), name="收货地址添加"),  # 收货地址添加
+    url(r'^address/edit/(?P<id>\d+)/$', AddressEditView.as_view(), name="收货地址编辑"),  # 收货地址编辑
+    url(r'^address/del/$', delAddress, name="收货地址删除"),  # 收货地址删除
 
 
 

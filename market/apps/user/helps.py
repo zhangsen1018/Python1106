@@ -1,10 +1,12 @@
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.profile import region_provider
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
 
 # 将验证登录的方法写成装饰器,在每次进行验证session中的数据
 from market.settings import ACCESS_KEY_ID, ACCESS_KEY_SECRET
+from cart.helper import json_msg
 
 
 def check_login(func):
@@ -12,6 +14,15 @@ def check_login(func):
         # 判断是否登录
         # 根据session里面的id 判断
         if request.session.get('ID') is None:
+            # 将上个请求地址保存到session
+            referer = request.META.get('HTTP_REFERER', None)
+            if referer:
+                request.session['referer'] = referer
+
+                # 判断 是否为ajax请求
+            if request.is_ajax():
+                return JsonResponse(json_msg(1, '未登录'))
+
             # 跳转到登录
             return redirect('用户:用户登录')
         else:
