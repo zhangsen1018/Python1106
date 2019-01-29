@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'haystack',  # 全文检索框架
     # 添加子应用
     'user.apps.UserConfig',
     'goods.apps.GoodsConfig',
@@ -73,7 +72,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media',  # 添加渲染 MEDIA_URL变量
             ],
         },
     },

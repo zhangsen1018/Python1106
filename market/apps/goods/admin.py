@@ -6,24 +6,24 @@ from goods.models import Activity, Banner, GoodsSKU, GoodsSPU, Unit, Category, G
 
 
 # 首页活动表
-@admin.register(Activity)
-class ActivityAdmin(admin.ModelAdmin):
+@admin.register(ActivityModel)
+class ActivityModelAdmin(admin.ModelAdmin):
     list_per_page = 4  #: 每页显示条数
 
     actions_on_top: True  # 操作是否在上面显示, 默认  True  ,反正两个相反
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'title', 'img_url', 'url_site']
+    list_display = ['id', 'activityName', 'imgUrl', 'urlUrl']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'title', 'img_url', 'url_site']
+    list_display_links = ['id', 'activityName', 'imgUrl', 'urlUrl']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['title']
+    list_filter = ['activityName']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['title']
+    search_fields = ['activityName']
 
     # fields = []: 定义在添加或者编辑的时候操作哪些字段，一般不设
 
@@ -36,65 +36,59 @@ class ActivityAdmin(admin.ModelAdmin):
 
 
 # 首页轮播商品表
-@admin.register(Banner)
-class BannerAdmin(admin.ModelAdmin):
+@admin.register(BannerModel)
+class RotationModelAdmin(admin.ModelAdmin):
     list_per_page = 4  #: 每页显示条数
 
     actions_on_top: True  # 操作是否在上面显示, 默认  True  ,反正两个相反
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'name', 'goods_sku', 'img_url', 'order', 'Create_time', 'update_time',
+    list_display = ['id', 'bannerName', 'goodsSKU', 'goodsImg', 'bannerOrder', 'Create_time', 'update_time',
                     'is_delete']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'name', 'goods_sku', 'img_url', 'order', 'Create_time', 'update_time',
+    list_display_links = ['id', 'bannerName', 'goodsSKU', 'goodsImg', 'bannerOrder', 'Create_time', 'update_time',
                           'is_delete']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['name']
+    list_filter = ['bannerName']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['name']
+    search_fields = ['bannerName']
 
     # fields = []: 定义在添加或者编辑的时候操作哪些字段，一般不设
 
     # 对可编辑区域分组,列表里面的字段填写模型的属性，
     fieldsets = (
-        ('轮播活动名', {"fields": ['name']}),
-        ('商品SKU', {"fields": ['goods_sku']}),
-        ('轮播图片地址', {"fields": ['img_url']}),
-        ('排序', {"fields": ['order']}),
+        ('名称', {"fields": ['bannerName']}),
+        ('商品SKUID', {"fields": ['goodsSKU']}),
+        ('图片地址', {"fields": ['goodsImg']}),
+        ('排序', {"fields": ['bannerOrder']}),
     )
 
 
-# 商品sku
-class GalleryInline(admin.TabularInline):
-    model = Gallery
-    extra = 2
-
-
 # 商品SKU表
-@admin.register(GoodsSKU)
-class GoodsSKUAdmin(admin.ModelAdmin):
+@admin.register(GoodsSKUModel)
+class GoodsSKUModelAdmin(admin.ModelAdmin):
     list_per_page = 4  #: 每页显示条数
 
     actions_on_top: True  # 操作是否在上面显示, 默认  True  ,反正两个相反
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'sku_name', 'brief', 'price', 'unit', 'stock', 'sale_num', 'logo',
-                    'is_on_sale', 'category', 'goods_spu', 'Create_time', 'update_time', 'is_delete']
+    list_display = ['id', 'goodsname', 'goodsbrief', 'price', 'stock', 'sales', 'goodslogo', 'shelves',
+                    'goodsclass_id', 'spu_id', 'unit', 'Create_time', 'update_time', 'is_delete']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'sku_name', 'brief', 'price', 'unit', 'stock', 'sale_num', 'logo',
-                          'is_on_sale', 'category', 'goods_spu', 'Create_time', 'update_time', 'is_delete']
+    list_display_links = ['id', 'goodsname', 'goodsbrief', 'price', 'stock', 'sales', 'goodslogo', 'shelves',
+                          'goodsclass_id', 'spu_id', 'unit', 'Create_time', 'update_time', 'is_delete']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['sku_name']
+    list_filter = ['goodsname']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['sku_name']
+    search_fields = ['goodsname']
 
     # fields = []: 定义在添加或者编辑的时候操作哪些字段，一般不设
 
@@ -111,89 +105,86 @@ class GoodsSKUAdmin(admin.ModelAdmin):
         ('商品分类', {"fields": ['category']}),
         ('商品SPU', {"fields": ['goods_spu']}),
     )
-    # 关联模型
-    inlines = [
-        GalleryInline,
-    ]
 
 
 # 商品SPU表
-@admin.register(GoodsSPU)
-class GoodsSPUAdmin(admin.ModelAdmin):
+@admin.register(GoodsSPUModel)
+class GoodsSPUModelAdmin(admin.ModelAdmin):
     list_per_page = 4  #: 每页显示条数
 
     actions_on_top: True  # 操作是否在上面显示, 默认  True  ,反正两个相反
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'spu_name', 'content']
+    list_display = ['id', 'SPU_name', 'SPU_details']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'spu_name', 'content']
+    list_display_links = ['id', 'SPU_name', 'SPU_details']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['spu_name']
+    list_filter = ['SPU_name']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['spu_name']
+    search_fields = ['SPU_name']
 
     # fields = []: 定义在添加或者编辑的时候操作哪些字段，一般不设
 
     # 对可编辑区域分组,列表里面的字段填写模型的属性，
     fieldsets = (
-        ('商品SPU名称', {"fields": ['spu_name']}),
-        ('商品spu详情', {"fields": ['content']}),
+        ('SPU名', {"fields": ['SPUname']}),
+        ('SPU简介', {"fields": ['SPUdetails']}),
     )
 
 
+
+
 # 商品单位表
-@admin.register(Unit)
-class UnitAdmin(admin.ModelAdmin):
+@admin.register(UnitModel)
+class UnitModelAdmin(admin.ModelAdmin):
     list_per_page = 4  #: 每页显示条数
 
     actions_on_top: True  # 操作是否在上面显示, 默认  True  ,反正两个相反
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'name', 'Create_time', 'update_time', 'is_delete']
+    list_display = ['id', 'unitname', 'Create_time', 'update_time', 'is_delete']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'name', 'Create_time', 'update_time', 'is_delete']
+    list_display_links = ['id', 'unitname', 'Create_time', 'update_time', 'is_delete']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['name']
+    list_filter = ['unitname']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['name']
+    search_fields = ['unitname']
 
 
 # 商品分类表
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+@admin.register(GoodsClassModel)
+class GoodsClassModelAdmin(admin.ModelAdmin):
     list_per_page = 4  #: 每页显示条数
 
     actions_on_top: True  # 操作是否在上面显示, 默认  True  ,反正两个相反
     actions_on_bottom: True  # 操作是否在下面显示, 默认   False
 
     # 自定义显示列，在models类中对字段有方法的就填方法名
-    list_display = ['id', 'cate_name', 'brief', 'order', 'Create_time', 'update_time', 'is_delete']
+    list_display = ['id', 'classname', 'classbrief', 'Create_time', 'update_time', 'is_delete']
 
     # 设置在列表页字段上添加一个 a标签, 从而进入到编辑页面,在models类中对字段有方法的就填方法名
-    list_display_links = ['id', 'cate_name', 'brief', 'order', 'Create_time', 'update_time', 'is_delete']
+    list_display_links = ['id', 'classname', 'classbrief', 'Create_time', 'update_time', 'is_delete']
 
     # 列表右侧栏过滤器,只能写一个
-    list_filter = ['cate_name']
+    list_filter = ['classname']
 
     # 搜索框,搜索字段 也只能写一个
-    search_fields = ['cate_name']
+    search_fields = ['classname']
 
     # fields = []: 定义在添加或者编辑的时候操作哪些字段，一般不设
 
     # 对可编辑区域分组,列表里面的字段填写模型的属性，
     fieldsets = (
-        ('分类名称', {"fields": ['cate_name']}),
-        ('描述', {"fields": ['brief']}),
-        ('排序', {"fields": ['order']}),
+        ('分类名', {"fields": ['classname']}),
+        ('分类简介', {"fields": ['classbrief']}),
     )
 
 
