@@ -14,7 +14,7 @@
         </div>
         <h1 class="am-header-title1">
             <div class="search-box">
-                <a href="village.html" class="index-search">小米之家</a>
+                <a href="{% url 'search:haystack_search' %}" class="index-search">小米之家</a>
                 <!--  <input type="submit" value="" class="search-icon" /> -->
             </div>
         </h1>
@@ -30,12 +30,16 @@
 
 
 {% block content %}
+    <div style="height: 49px;"></div>
     <!--图片轮换-->
-    <div class="am-slider am-slider-default" data-am-flexslider id="demo-slider-0">
-        <ul class="am-slides">
-            <li><img src="{% static 'images/banner.png' %}"/></li>
-        </ul>
-    </div>
+    {#    <div class="am-slider am-slider-default" data-am-flexslider id="demo-slider-0">#}
+    {#    <ul class="am-slides">#}
+    {#        {% for banner in banners %}#}
+    {#            <li><a href="{% url 'goods:详情' banner.goods_sku.pk %}"><img src="{{ MEDIA_URL }}{{ banner.img_url }}"/></a>#}
+    {#            </li>#}
+    {#        {% endfor %}#}
+    {#    </ul>#}
+    {#    </div>#}
     <!--导航-->
     <ul class="sq-nav">
         <li>
@@ -93,13 +97,16 @@
     <div class="h-line"></div>
     <!--不规则展示-->
     <div class="index-product">
-        <div class="index-pro-lf"><a href=""><img src="{% static 'images/s1.png' %}"/></a></div>
-        <div class="index-pro-lr"><a href=""><img src="{% static 'images/s2.png' %}"/></a></div>
+        <div class="index-pro-lf"><a href="{{ acts.0.url_site }}"><img src="{{ MEDIA_URL }}{{ acts.0.img_url }}"/></a>
+        </div>
+        <div class="index-pro-lr"><a href="{{ acts.1.url_site }}"><img src="{{ MEDIA_URL }}{{ acts.1.img_url }}"/></a>
+        </div>
     </div>
     <div class="product-bot">
-        <div class="product-bot-lf"><a href=""><img src="{% static 'images/s3.png' %}"/></a></div>
+        <div class="product-bot-lf"><a href="{{ acts.2.url_site }}"><img src="{{ MEDIA_URL }}{{ acts.2.img_url }}"/></a>
+        </div>
         <div class="product-bot-lr">
-            <div class="top"><a href=""><img src="{% static 'images/s4.png' %}"/></a></div>
+            <div class="top"><a href="{{ acts.3.url_site }}"><img src="{{ MEDIA_URL }}{{ acts.3.img_url }}"/></a></div>
             <div class="bot">
                 <div class="bot-lf"><a href=""><img src="{% static 'images/s5.png' %}"/></a></div>
                 <div class="bot-lr"><a href=""><img src="{% static 'images/s6.png' %}"/></a></div>
@@ -109,30 +116,36 @@
     <!--不规则展示-->
     <div class="h-line"></div>
     <!-- 特色专区-->
-    <div class="sq-title">
-        <img src="{% static 'images/ts.png' %}" width="26"/>
-        特色专区
-    </div>
-    <ul data-am-widget="gallery" class="am-gallery pro-list am-avg-sm-2 am-avg-md-2 am-avg-lg-4 am-gallery-default">
-        <li>
-            <div class="am-gallery-item">
-                <a href="detail.html" class="">
-                    <img src="{% static 'images/test.png' %}"/>
-                    <h3 class="am-gallery-title">猪骨头棒新鲜生鲜肉制品猪大骨头筒骨熬汤佳品500g</h3>
-                    <div class="am-gallery-desc">￥52</div>
-                </a>
-            </div>
-        </li>
-        <li>
-            <div class="am-gallery-item">
-                <a href="detail.html" class="">
-                    <img src="{% static 'images/test1.png' %}"/>
-                    <h3 class="am-gallery-title">冻品批发大江鸡腿 冷鲜鸡腿放心食材1kg 冷冻食材</h3>
-                    <div class="am-gallery-desc">￥39</div>
-                </a>
-            </div>
-        </li>
-    </ul>
+    {#    <div class="sq-title">#}
+    {#        <img src="{% static 'images/ts.png' %}" width="26"/>#}
+    {#        特色专区#}
+    {#    </div>#}
+    {% for zone in act_zones %}
+        <div class="sq-title">
+            <img src="{% static 'images/ts.png' %}" width="26"/>
+
+            {{ zone.title }}
+
+        </div>
+
+        <ul data-am-widget="gallery" class="am-gallery pro-list am-avg-sm-2 am-avg-md-2 am-avg-lg-4 am-gallery-default">
+            {% for zgoods in zone.activityzonegoods_set.all %}
+                <li>
+                    <div class="am-gallery-item">
+
+                        <a href="{% url 'goods:详情' zgoods.goods_sku.pk %}" class="">
+                            <img src="{{ MEDIA_URL }}{{ zgoods.goods_sku.logo }}"/>
+                            <h3 class="am-gallery-title">
+                                {{ zgoods.goods_sku.goods_spu.spu_name }}&emsp;{{ zgoods.goods_sku.sku_name }}
+                            </h3>
+                            <div class="am-gallery-desc">￥{{ zgoods.goods_sku.price }}</div>
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
     <!--签到-->
     <div class="qd-box">
         <div class="popup-title">
@@ -140,8 +153,9 @@
             <div class="popup-close"><i class="iconfont">&#xe602</i></div>
         </div>
         <div class="dq-text">
-            <img src="images/qiandao.png" width="40"/>&nbsp; 您已连续签到3天
+            <img src="{% static 'images/qiandao.png' %}" width="40"/>&nbsp; 您已连续签到3天
         </div>
+    </div>
     </div>
     <!--签到-->
 {% endblock %}
@@ -165,7 +179,7 @@
                 </a>
             </li>
             <li>
-                <a href="shopcart.html" class="">
+                <a href="{% url 'cart:购物车页面' %}" class="">
                     <span class="am-icon-shopping-cart"></span>
                     <span class="am-navbar-label">购物车</span>
                 </a>
@@ -178,7 +192,7 @@
             </li>
 
             <li>
-                <a href="member.html" class="">
+                <a href="{% url '用户:个人中心' %}" class="">
                     <span class="am-icon-user"></span>
                     <span class="am-navbar-label">我的</span>
                 </a>
@@ -208,7 +222,7 @@
                 }
             });
         }
+
         showCityInfo();
     </script>
 {% endblock %}
- 
