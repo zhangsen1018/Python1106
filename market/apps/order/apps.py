@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class OrderformConfig(AppConfig):
+class OrderConfig(AppConfig):
     name = 'order'
     verbose_name = "订单管理"
