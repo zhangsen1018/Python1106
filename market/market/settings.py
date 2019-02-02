@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     # 添加子应用
     'user.apps.UserConfig',
     'goods.apps.GoodsConfig',
-    'order.apps.OrderformConfig',
-    'cart.apps.ShopcarConfig',
+    'order.apps.OrderConfig',
+    'cart.apps.CartConfig',
     'ckeditor',  # 添加ckeditor富文本编辑器
     'ckeditor_uploader',  # 添加ckeditor富文本编辑器文件上传部件
 ]
