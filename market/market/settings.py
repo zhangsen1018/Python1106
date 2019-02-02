@@ -72,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',  # 添加渲染 MEDIA_URL变量
             ],
         },
     },
@@ -171,7 +172,6 @@ CACHES = {
 # 修改默认sessioin的存储引擎
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
-
 
 # 阿里短信的配置
 ACCESS_KEY_ID = "LTAI2qSiJdWP87em"

@@ -27,3 +27,8 @@ def get_cart_count(request):
         for v in values:
             total_count += int(v)
         return total_count
+
+
+def get_cart_key(user_id):
+    """生成购物车key"""
+    return f"cart_{user_id}"

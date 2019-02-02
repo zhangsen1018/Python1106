@@ -6,7 +6,7 @@ from django_redis import get_redis_connection
 
 from DB.base_view import BaseVerifyView
 from goods.models import GoodsSKU
-from cart.helper import json_msg, get_cart_count
+from cart.helper import json_msg, get_cart_count, get_cart_key
 
 
 class AddCartView(BaseVerifyView):
@@ -87,42 +87,43 @@ class ShopCartView(BaseVerifyView):
     #   购物车显示页面
     def get(self, request):
         # 获取购物车中的商品信息
-        goods_sku = GoodsSKU.objects.filter(is_delete=False)
-        #  sku_id count
-        # 先获取sku_id, 在查询获取商品的完整信息
-        # 计算总价格
-        # 连接数据库 默认配置
-        r = get_redis_connection("default")
-        # 获取redis中的sku_id count 商品的数量
+        # 1. 接收参数
         user_id = request.session.get("ID")
-        # cart_key = "cart_{}".format(request.session.get('ID'))
-        cart_key = f"cart_{user_id}"
-        # 获取
-        cart_data = r.hgetall(cart_key)  # 字典, 键和值都二进制编码
-        # 遍历得到的数据字典
-        # 使用一个变量保存商品
-        goodsskus = []
-        for sku_id, count in cart_data.items():
+        # 2. 操作数据库
+        r = get_redis_connection()
+        # 准备键
+        cart_key = get_cart_key(user_id)
+
+        # 从redis获取所有的购物车信息
+        cart_datas = r.hgetall(cart_key)
+        # 准备一个空列表,保存多个商品
+        goods_skus = []
+        # 遍历字典
+        for sku_id,count in cart_datas.items():
+            # 将二进制数据转成整型
             sku_id = int(sku_id)
             count = int(count)
 
-            # 查询商品的完整信息
-            goodssku = GoodsSKU.objects.get(pk=sku_id)
+            # 2. 根据购物中的sku_id从 商品sku表中获取商品信息
+            try:
+                goods_sku = GoodsSKU.objects.get(pk=sku_id, is_delete=False, is_on_sale=True)
+            except GoodsSKU.DoesNotExist:
+                continue
 
-            # 将count保存到 商品对象上(对象上添加一个自定义的属性)
-            goodssku.count = count
+            # 3. 将购物车中数量和商品信息合成一块儿(给一个已经存在的对象添加属性)
+            goods_sku.count = count
+            # setattr(goods_sku,'count',count)
 
-            # 保存到列表
-            goodsskus.append(goodssku)
+            # 保存商品到商品列表
+            goods_skus.append(goods_sku)
 
-        # 渲染数据到页面
+
+        # 渲染数据
         context = {
-            "goodsskus": goodsskus,
-            "goods_sku": goods_sku,
-
+            'goods_skus':goods_skus
         }
 
-        return render(request, "cart/shopcart.html", context)
+        return render(request,'cart/shopcart.html',context=context)
 
     def post(self, request):
         pass

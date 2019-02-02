@@ -32,14 +32,14 @@
 {% block content %}
     <div style="height: 49px;"></div>
     <!--图片轮换-->
-    {#    <div class="am-slider am-slider-default" data-am-flexslider id="demo-slider-0">#}
-    {#    <ul class="am-slides">#}
-    {#        {% for banner in banners %}#}
-    {#            <li><a href="{% url 'goods:详情' banner.goods_sku.pk %}"><img src="{{ MEDIA_URL }}{{ banner.img_url }}"/></a>#}
-    {#            </li>#}
-    {#        {% endfor %}#}
-    {#    </ul>#}
-    {#    </div>#}
+        <div class="am-slider am-slider-default" data-am-flexslider id="demo-slider-0">
+        <ul class="am-slides">
+            {% for banner in banners %}
+                <li><a href="{% url 'goods:详情' banner.goods_sku.pk %}"><img src="{{ MEDIA_URL }}{{ banner.img_url }}"/></a>
+                </li>
+            {% endfor %}
+        </ul>
+        </div>
     <!--导航-->
     <ul class="sq-nav">
         <li>

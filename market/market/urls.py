@@ -25,8 +25,9 @@ urlpatterns = [
     url(r'^search/', include('haystack.urls', namespace='search')),
     # 添加子路由
     url(r'^admin/', admin.site.urls),
-    url(r'^user/', include('user.urls', namespace='用户')),
-    url(r'^goods/', include('goods.urls', namespace='goods')),
-    url(r'^cart/', include('cart.urls', namespace='cart')),
+    url(r'^user/', include('user.urls', namespace='用户')),  # 用户模块
+    url(r'^goods/', include('goods.urls', namespace='goods')),  # 商品模块
+    url(r'^cart/', include('cart.urls', namespace='cart')),  # 购物车模块
+    url(r'^order/', include("order.urls", namespace="order")),  # 订单模块
     url(r'^$', IndexView.as_view()),
 ]

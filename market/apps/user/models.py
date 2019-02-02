@@ -55,10 +55,13 @@ class SpAddress(Base_model):
     user = models.ForeignKey(to="user.Users", verbose_name="所属用户")
     isDefault = models.BooleanField(default=False, verbose_name="是否为默认地址")
 
-    def __str__(self):
-        return self.username
+    # def __str__(self):
+    #     return self.username
 
     class Meta:
         db_table = "sp_address"
         verbose_name = "收货地址管理"
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return "{}:{}".format(self.username, self.phone)

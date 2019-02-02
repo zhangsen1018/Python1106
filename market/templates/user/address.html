@@ -1,6 +1,8 @@
 {% extends 'basetem/basetem_user.html' %}
 {% load static %}
 
+
+{# 添加三级联动的css插件 #}
 {% block head_css %}
     <style type="text/css">
         ._citys {
@@ -83,16 +85,19 @@
             list-style-type: none;
         }
 
+        {#  自己添加的三级联动背景颜色 #}
         ._citys {
             background-color: white
         }
 
+        {#  自己添加的三级联动字符长度 #}
         #city {
             width: 20rem
         }
     </style>
 {% endblock %}
 
+{# 添加三级联动的js插件 #}
 {% block head_js %}
     <script src="{% static 'area/js/common.js' %}"></script>
     <script src="{% static 'area/js/Popt.js' %}"></script>
