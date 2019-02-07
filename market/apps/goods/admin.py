@@ -29,7 +29,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
     # 对可编辑区域分组,列表里面的字段填写模型的属性，
     fieldsets = (
-        ('活动名称', {"fields": ['activityName']}),
+        ('活动名称', {"fields": ['title']}),
         ('活动图片地址', {"fields": ['img_url']}),
         ('活动的url地址', {"fields": ['url_site']}),
     )
